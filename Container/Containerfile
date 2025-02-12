@@ -1,0 +1,13 @@
+FROM alpine:3.14
+
+ARG TOOLS_PATH=/tools
+RUN mkdir ${TOOLS_PATH}
+WORKDIR ${TOOLS_PATH}
+
+RUN apk --no-cache add ca-certificates wget make cmake avr-libc gcc-avr avrdude git screen
+
+RUN echo 'bindkey "\015" stuff "\015\012"' > ~/.screenrc
+
+WORKDIR /work
+
+RUN git config --global --add safe.directory /work
