@@ -9,6 +9,7 @@
 
 #include "asm.h"
 #include "crc8.h"
+#include "tinbus.h"
 
 #define RX_IS_RELEASED (PIND & (1 << PORTD0))
 
@@ -16,10 +17,12 @@
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
-#define MESSAGE_SIZE 14
-#define SHUNT_DEVICE 0x30
+#define DATA_SIZE 6
+#define MESSAGE_SIZE (DATA_SIZE + 6)
 
-#define ADC_SAMPLES 7
+#define MESSAGE_SHUNT_BASE 0x10
+
+#define ADC_SAMPLES 4
 #define BIT_PERIOD 88 // 9600 bps with clock at 921.6 kHz (96 less 8 cycles)
 #define BIT_PULSE 30  // pulse is 5/16 of bit period
 
@@ -88,12 +91,8 @@ bool send(uint8_t data[], uint8_t bytes_to_send) {
     return true;
 }
 
-#define BIT_SSR 20
-#define BIT_IDE 19
-#define BIT_RTR 0
-
 int main(void) {
-    const uint32_t msg_id = 0x70000030 | (1UL << BIT_SSR) | (1UL << BIT_IDE) | (0UL << BIT_RTR);
+
     static int32_t current = 0;
     static int64_t charge = 0;
     static uint8_t count = 0;
@@ -112,7 +111,7 @@ int main(void) {
         {
             int32_t value = asm_ADC_getRawResult();
             current += value;
-            if ((value < 2) && (value > -2)) {
+            if ((value <= 1) && (value >= -1)) {
                 value = 0; // remove zero offset error for ah accumulation
             }
             charge += (int64_t)value;
@@ -122,24 +121,24 @@ int main(void) {
                 count = 0;
 
                 uint8_t id = getSwitch();
+                uint32_t msg_id = get_tinbus_ext_id(id, TINBUS_PRIORITY_MEDIUM, TINBUS_DATA_FRAME);
+
                 uint8_t buffer[MESSAGE_SIZE];
                 buffer[0] = (uint8_t)(msg_id >> 24);
                 buffer[1] = (uint8_t)(msg_id >> 16);
                 buffer[2] = (uint8_t)(msg_id >> 8);
-                buffer[3] = (uint8_t)(msg_id | id);
+                buffer[3] = (uint8_t)(msg_id);
 
-                buffer[4] = 8; // data size (dlc)
+                buffer[4] = DATA_SIZE; // data size (dlc)
 
-                buffer[5] = (uint32_t)current >> 12;
-                buffer[6] = (uint32_t)current >> 4;
+                buffer[5] = (uint32_t)current >> 10;
+                buffer[6] = (uint32_t)current >> 2;
                 current = 0;
 
-                buffer[7] = (uint64_t)charge >> 44;
-                buffer[8] = (uint64_t)charge >> 36;
-                buffer[9] = (uint64_t)charge >> 28;
-                buffer[10] = (uint64_t)charge >> 20;
-                buffer[11] = (uint64_t)charge >> 12;
-                buffer[12] = (uint64_t)charge >> 4;
+                buffer[7] = (uint64_t)charge >> 26;
+                buffer[8] = (uint64_t)charge >> 18;
+                buffer[9] = (uint64_t)charge >> 10;
+                buffer[10] = (uint64_t)charge >> 2;
 
                 uint8_t crc = 0;
                 for (uint8_t i = 0; i < MESSAGE_SIZE - 1; i++) {

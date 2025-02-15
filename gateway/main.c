@@ -10,19 +10,16 @@
 #include <avr/wdt.h>
 #include <util/delay.h>
 
-#define BAUD 19200L
-#include <util/setbaud.h>
+#define UART1_BAUD 9600UL
+#include "uart1.h"
 
-#include "crc8.h"
-#include "bit_rev.h"
-#include "hex_asc.h"
-// #include "cobsm.h"
-// #include "mb_crc.h"
-
+#include "cobsm.h"
 #include "timer.h"
 #include "uart.h"
 #include "uart0.h"
-#include "uart1.h"
+
+#define RX_BUFFER_SIZE 32
+#define RX_TIMEOUT TIMER_US_TO_TICKS((10 * 2 * 1000000) / 9600)
 
 int main(void) {
     wdt_enable(WDTO_250MS);
@@ -30,9 +27,8 @@ int main(void) {
     stdout = uart1_device;
     stdin = uart1_device;
 
-    bool eof = false;
-    uint8_t bytes = 0;
-    uint8_t crc = 0;
+    uint8_t rx_buffer[RX_BUFFER_SIZE] = {0};
+    uint8_t rx_byte_count = 0;
 
     DDRC |= (1 << PORTC3);
 
@@ -40,38 +36,20 @@ int main(void) {
         wdt_reset();
         int rx_byte = fgetc(uart0_device);
         if (rx_byte != EOF) {
-            rx_byte = bit_rev(rx_byte); // bits on wire are in msb first
-            putc(hex_bin2asc((uint8_t)rx_byte >> 4), stdout);
-            putc(hex_bin2asc((uint8_t)rx_byte & 0x0F), stdout);
-            putc(' ', stdout);
-            eof = false;
-            bytes++;
-            crc = crc8(crc, rx_byte);
-        } else if (!eof) { // check for 20 bit period timeout
+            rx_buffer[rx_byte_count++] = rx_byte;
+            if (rx_byte_count >= RX_BUFFER_SIZE - 1) {
+                rx_byte_count = 0; // do not overflow rx buffer, allow for terminating zero
+            }
+        } else if (rx_byte_count) { // check for 20 bit period timeout
             uint32_t rx_ticks = uart_get_rx_ticks(uart0_device);
             uint32_t ticks = timer_get_ticks();
-            if (rx_ticks + TIMER_US_TO_TICKS(2083) < ticks) {
-                eof = true;
-
-                putc(':', stdout);
-                putc(' ', stdout);
-                putc(hex_bin2asc((uint8_t)crc >> 4), stdout);
-                putc(hex_bin2asc((uint8_t)crc & 0x0F), stdout);
-
-                
-
-                putc('\r', stdout);
-                putc('\n', stdout);
-                bytes = 0;
-                crc = 0;
+            if (rx_ticks + RX_TIMEOUT < ticks) {
+                uint8_t tx_byte_count = cobsm_encode(rx_buffer, rx_byte_count);
+                rx_byte_count = 0;
+                // rx_buffer[tx_byte_count++] = 0; // append a zero and send
+                fwrite(rx_buffer, tx_byte_count, 1, stdout);
             }
         }
-
-        // printf("Hello\n");
-        // for (int i = 0; i < 100; i++) {
-        //     _delay_ms(10);
-        //     wdt_reset();
-        // }
     }
     return 0;
 }

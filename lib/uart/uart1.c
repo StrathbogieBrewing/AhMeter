@@ -7,7 +7,7 @@
 #include "uart1.h"
 
 #ifndef UART1_BAUD
-#define UART1_BAUD 19200
+#define UART1_BAUD 9600
 #endif
 
 #undef BAUD // avoid compiler warning

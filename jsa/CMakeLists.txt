@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.18)
 
 set(AVR_UPLOADTOOL avrdude)
 set(AVR_UPLOADTOOL_BAUDRATE 19200)
-set(AVR_UPLOADTOOL_PORT /dev/ttyUSB0)
+set(AVR_UPLOADTOOL_PORT /dev/ttySTK500V2)
 set(AVR_PROGRAMMER stk500v2)
 
-# set(AVR_MCU_TYPE attiny2313)
-set(AVR_MCU_TYPE attiny4313)
+set(AVR_MCU_TYPE attiny2313)
+# set(AVR_MCU_TYPE attiny4313)
 set(AVR_MCU_SPEED "921600UL")
 
 set(AVR_L_FUSE 0xDD)
@@ -23,16 +23,14 @@ include(../cmake/check-git.cmake)
 CheckGitSetup()
 
 include_directories(../lib/crc)
-# include_directories(../library/modbus)
+include_directories(../lib/tinbus)
 
 add_avr_executable(${PROJECT_NAME} 
     main.c
-    
     asm.S
-    ${CMAKE_BINARY_DIR}/generated/git_version.c
 
     ../lib/crc/crc8.c
+    ../lib/tinbus/tinbus.c
 
-    # ../library/utils/format.c
-    # ../library/modbus/mb_crc.c
+    ${CMAKE_BINARY_DIR}/generated/git_version.c
 )

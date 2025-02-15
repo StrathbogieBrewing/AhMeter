@@ -23,11 +23,6 @@ uint32_t timer_get_ticks(void)
     return (overflows << 8) + (uint32_t)tcnt0;
 }
 
-// uint32_t timer_get_us(void){
-    // Not happy about the overflow here !!!
-//     return timer_get_ticks() * TIMER_US_PER_TICK;
-// }
-
 ISR(TIMER0_OVF_vect)
 {
     timer_overflows++;

@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
 
-podman run -ti -v /dev/ttyUSB0:/dev/ttyUSB0 --group-add keep-groups -v $(pwd):/work localhost/avr-tools:1.0.0
+podman run -ti -v /dev/ttySTK500V2:/dev/ttySTK500V2 --group-add keep-groups -v $(pwd):/work localhost/avr-tools:1.0.0
 

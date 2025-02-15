@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "asm.h": "c",
+        "hex_asc.h": "c",
+        "uart1.h": "c"
+    }
+}
