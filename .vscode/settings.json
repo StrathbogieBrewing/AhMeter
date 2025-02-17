@@ -2,6 +2,10 @@
     "files.associations": {
         "asm.h": "c",
         "hex_asc.h": "c",
-        "uart1.h": "c"
+        "uart1.h": "c",
+        "array": "c",
+        "string": "c",
+        "buffer": "c",
+        "string_view": "c"
     }
 }

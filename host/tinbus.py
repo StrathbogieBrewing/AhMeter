@@ -1,13 +1,25 @@
-import cobsm, port, utils
+import cobsm, port, utils, crc, time
 
 serial = port.port("DUSB (Dingo)")
 
+start_time = time.time()
+
 while(1):
+    
     frame = serial.read()
     if(frame):
-        print(frame.hex())
         decoded = cobsm.decode(frame)
         rev = bytearray()
         for b in decoded:
             rev.append(utils.rev_bits(b))
-        print(rev.hex())
+        # print(rev.hex())
+        # print(crc.check(rev).hex())
+        # print(rev[2:4].hex())
+        i = int.from_bytes(rev[2:5], byteorder='big', signed=True)
+
+        # print(round(i * 0.014, 3))
+
+        ts = time.time()
+        # print(round(ts-start_time, 3), round(i , 3))
+        print(round(ts-start_time, 3), round(i / 414.54, 3))
+        start_time = ts

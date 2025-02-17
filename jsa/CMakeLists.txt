@@ -5,8 +5,8 @@ set(AVR_UPLOADTOOL_BAUDRATE 19200)
 set(AVR_UPLOADTOOL_PORT /dev/ttySTK500V2)
 set(AVR_PROGRAMMER stk500v2)
 
-set(AVR_MCU_TYPE attiny2313)
-# set(AVR_MCU_TYPE attiny4313)
+# set(AVR_MCU_TYPE attiny2313)
+set(AVR_MCU_TYPE attiny4313)
 set(AVR_MCU_SPEED "921600UL")
 
 set(AVR_L_FUSE 0xDD)
@@ -24,6 +24,7 @@ CheckGitSetup()
 
 include_directories(../lib/crc)
 include_directories(../lib/tinbus)
+include_directories(../lib/buffer)
 
 add_avr_executable(${PROJECT_NAME} 
     main.c

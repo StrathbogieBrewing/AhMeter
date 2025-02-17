@@ -7,18 +7,16 @@ extern "C" {
 
 #include <stdint.h>
 
-typedef enum {
-    TINBUS_PRIORITY_HIGH = 0,
-    TINBUS_PRIORITY_MEDIUM,
-    TINBUS_PRIORITY_LOW,
-} tinbus_priority_t;
+#include "buffer.h"
 
-typedef enum {
-    TINBUS_DATA_FRAME = 0,
-    TINBUS_RTR_FRAME,
-} tinbus_frame_t;
+#define TINBUS_HEADER_LENGTH 2
+#define TINBUS_MAX_DATA_LENGTH 15
+#define TINBUS_CRC_LENGTH 1
+#define TINBUS_MAX_FRAME_LENGTH (TINBUS_HEADER_LENGTH + TINBUS_MAX_DATA_LENGTH + TINBUS_CRC_LENGTH)
 
-uint32_t get_tinbus_ext_id(uint32_t id, tinbus_priority_t priority, tinbus_frame_t frame_type);
+#define TINBUS_FRAME_LENGTH(data_length) (TINBUS_HEADER_LENGTH + data_length + TINBUS_CRC_LENGTH)
+
+bool tinbus_build_frame(buffer_t *frame, uint16_t id, buffer_t *data);
 
 #ifdef __cplusplus
 }

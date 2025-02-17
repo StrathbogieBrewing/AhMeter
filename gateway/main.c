@@ -19,7 +19,7 @@
 #include "uart0.h"
 
 #define RX_BUFFER_SIZE 32
-#define RX_TIMEOUT TIMER_US_TO_TICKS((10 * 2 * 1000000) / 9600)
+#define RX_TIMEOUT TIMER_US_TO_TICKS((15 * 1000000) / 9600)
 
 int main(void) {
     wdt_enable(WDTO_250MS);

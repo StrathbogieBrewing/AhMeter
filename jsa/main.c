@@ -8,7 +8,8 @@
 #include <util/delay.h>
 
 #include "asm.h"
-#include "crc8.h"
+
+#include "buffer.h"
 #include "tinbus.h"
 
 #define RX_IS_RELEASED (PIND & (1 << PORTD0))
@@ -17,12 +18,12 @@
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
-#define DATA_SIZE 6
+#define DATA_LENGTH 3
 #define MESSAGE_SIZE (DATA_SIZE + 6)
 
-#define MESSAGE_SHUNT_BASE 0x10
+#define MESSAGE_SHUNT_BASE 0x0800
 
-#define ADC_SAMPLES 4
+#define ADC_SAMPLES 7
 #define BIT_PERIOD 88 // 9600 bps with clock at 921.6 kHz (96 less 8 cycles)
 #define BIT_PULSE 30  // pulse is 5/16 of bit period
 
@@ -61,7 +62,7 @@ bool tx_one(void) {
 }
 
 bool send(uint8_t data[], uint8_t bytes_to_send) {
-    for (uint8_t i = 0; i < 30; i++) { // 3 character periods between frames
+    for (uint8_t i = 0; i < 20; i++) { // minimum 15 bit periods between frames
         if (!tx_one()) {
             return false;
         }
@@ -92,9 +93,7 @@ bool send(uint8_t data[], uint8_t bytes_to_send) {
 }
 
 int main(void) {
-
     static int32_t current = 0;
-    static int64_t charge = 0;
     static uint8_t count = 0;
 
     wdt_enable(WDTO_250MS);
@@ -111,56 +110,40 @@ int main(void) {
         {
             int32_t value = asm_ADC_getRawResult();
             current += value;
-            if ((value <= 1) && (value >= -1)) {
-                value = 0; // remove zero offset error for ah accumulation
-            }
-            charge += (int64_t)value;
             count++;
 
             if (count >= ADC_SAMPLES) {
                 count = 0;
 
-                uint8_t id = getSwitch();
-                uint32_t msg_id = get_tinbus_ext_id(id, TINBUS_PRIORITY_MEDIUM, TINBUS_DATA_FRAME);
+                uint16_t id = MESSAGE_SHUNT_BASE | (uint16_t)getSwitch();
 
-                uint8_t buffer[MESSAGE_SIZE];
-                buffer[0] = (uint8_t)(msg_id >> 24);
-                buffer[1] = (uint8_t)(msg_id >> 16);
-                buffer[2] = (uint8_t)(msg_id >> 8);
-                buffer[3] = (uint8_t)(msg_id);
-
-                buffer[4] = DATA_SIZE; // data size (dlc)
-
-                buffer[5] = (uint32_t)current >> 10;
-                buffer[6] = (uint32_t)current >> 2;
+                buffer_t *data_buffer = BUFFER(DATA_LENGTH);
+ 
+                data_buffer->data[0] = (uint32_t)current >> 16;
+                data_buffer->data[1] = (uint32_t)current >> 8;
+                data_buffer->data[2] = (uint32_t)current;
                 current = 0;
 
-                buffer[7] = (uint64_t)charge >> 26;
-                buffer[8] = (uint64_t)charge >> 18;
-                buffer[9] = (uint64_t)charge >> 10;
-                buffer[10] = (uint64_t)charge >> 2;
+                data_buffer->length = DATA_LENGTH;
 
-                uint8_t crc = 0;
-                for (uint8_t i = 0; i < MESSAGE_SIZE - 1; i++) {
-                    crc = crc8(crc, buffer[i]);
-                }
+                buffer_t *tx_buffer = BUFFER(TINBUS_FRAME_LENGTH(DATA_LENGTH));
 
-                buffer[MESSAGE_SIZE - 1] = crc;
+                tinbus_build_frame(tx_buffer, id, data_buffer);
 
                 uint8_t tries = 0;
+                uint8_t priority = 3;
                 while (tries < 5) {
-                    if (send(buffer, MESSAGE_SIZE)) {
+                    if (send(tx_buffer->data, tx_buffer->length)) {
                         break;
                     }
                     tries++;
-                    uint8_t i = tries + (TCNT0 & 0x07); // add some randomness
+                    uint8_t i = ((priority & 0x07) << 2) + (TCNT0 & 0x03);
                     while (i--) {
-                        _delay_ms(1);
+                        _delay_us(50); // approx 1/2 bit periods
                     }
                 }
             }
         }
     }
-
     return 0;
 }
