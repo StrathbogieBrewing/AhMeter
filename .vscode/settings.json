@@ -6,6 +6,7 @@
         "array": "c",
         "string": "c",
         "buffer": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "cstddef": "c"
     }
 }

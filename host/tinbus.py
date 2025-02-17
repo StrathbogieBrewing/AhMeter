@@ -15,7 +15,7 @@ while(1):
         # print(rev.hex())
         # print(crc.check(rev).hex())
         # print(rev[2:4].hex())
-        i = int.from_bytes(rev[2:5], byteorder='big', signed=True)
+        i = int.from_bytes(rev[1:4], byteorder='big', signed=True)
 
         # print(round(i * 0.014, 3))
 

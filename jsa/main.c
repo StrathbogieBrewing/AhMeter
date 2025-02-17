@@ -8,9 +8,7 @@
 #include <util/delay.h>
 
 #include "asm.h"
-
-#include "buffer.h"
-#include "tinbus.h"
+#include "crc8.h"
 
 #define RX_IS_RELEASED (PIND & (1 << PORTD0))
 
@@ -18,10 +16,10 @@
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
-#define DATA_LENGTH 3
-#define MESSAGE_SIZE (DATA_SIZE + 6)
+#define MESSAGE_SIZE 4
+#define FRAME_SIZE (MESSAGE_SIZE + 1)  // add a byte for the crc
 
-#define MESSAGE_SHUNT_BASE 0x0800
+#define MESSAGE_SHUNT_BASE 0x80
 
 #define ADC_SAMPLES 7
 #define BIT_PERIOD 88 // 9600 bps with clock at 921.6 kHz (96 less 8 cycles)
@@ -115,25 +113,22 @@ int main(void) {
             if (count >= ADC_SAMPLES) {
                 count = 0;
 
-                uint16_t id = MESSAGE_SHUNT_BASE | (uint16_t)getSwitch();
-
-                buffer_t *data_buffer = BUFFER(DATA_LENGTH);
- 
-                data_buffer->data[0] = (uint32_t)current >> 16;
-                data_buffer->data[1] = (uint32_t)current >> 8;
-                data_buffer->data[2] = (uint32_t)current;
+                uint8_t frame[FRAME_SIZE];
+                frame[0] = MESSAGE_SHUNT_BASE | (uint16_t)getSwitch();
+                frame[1] = (uint32_t)current >> 16;
+                frame[2] = (uint32_t)current >> 8;
+                frame[3] = (uint32_t)current;
                 current = 0;
-
-                data_buffer->length = DATA_LENGTH;
-
-                buffer_t *tx_buffer = BUFFER(TINBUS_FRAME_LENGTH(DATA_LENGTH));
-
-                tinbus_build_frame(tx_buffer, id, data_buffer);
+                uint8_t crc = 0;
+                for (uint8_t index = 0; index < MESSAGE_SIZE; index++) {
+                    crc = crc8(crc, frame[index]);
+                }
+                frame[4] = crc;
 
                 uint8_t tries = 0;
                 uint8_t priority = 3;
                 while (tries < 5) {
-                    if (send(tx_buffer->data, tx_buffer->length)) {
+                    if (send(frame, FRAME_SIZE)) {
                         break;
                     }
                     tries++;

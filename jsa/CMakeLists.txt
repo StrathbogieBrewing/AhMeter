@@ -23,15 +23,12 @@ include(../cmake/check-git.cmake)
 CheckGitSetup()
 
 include_directories(../lib/crc)
-include_directories(../lib/tinbus)
-include_directories(../lib/buffer)
 
 add_avr_executable(${PROJECT_NAME} 
     main.c
     asm.S
 
     ../lib/crc/crc8.c
-    ../lib/tinbus/tinbus.c
 
     ${CMAKE_BINARY_DIR}/generated/git_version.c
 )
