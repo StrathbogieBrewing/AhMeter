@@ -114,7 +114,9 @@ int main(void) {
                 count = 0;
 
                 uint8_t frame[FRAME_SIZE];
-                frame[0] = MESSAGE_SHUNT_BASE | (uint16_t)getSwitch();
+                // set lsb to zero to allow for future 16 bit ids
+                uint8_t id = MESSAGE_SHUNT_BASE | (getSwitch() << 1);
+                frame[0] = id;
                 frame[1] = (uint32_t)current >> 16;
                 frame[2] = (uint32_t)current >> 8;
                 frame[3] = (uint32_t)current;
