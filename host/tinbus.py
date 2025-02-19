@@ -21,5 +21,6 @@ while(1):
 
         ts = time.time()
         # print(round(ts-start_time, 3), round(i , 3))
-        print(round(ts-start_time, 3), round(i / 414.54, 3))
+        print("Current ", round(ts-start_time, 3), round(i / 414.54, 3))
+        print("Voltage ", round(ts-start_time, 3), round(i / 2821.4, 3))
         start_time = ts
