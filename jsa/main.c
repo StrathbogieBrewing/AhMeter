@@ -17,13 +17,13 @@
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
 #define MESSAGE_SIZE 4
-#define FRAME_SIZE (MESSAGE_SIZE + 1)  // add a byte for the crc
+#define FRAME_SIZE (MESSAGE_SIZE + 1) // add a byte for the crc
 
 #define MESSAGE_SHUNT_BASE 0x80
 
 #define ADC_SAMPLES 7
-#define BIT_PERIOD 88 // 9600 bps with clock at 921.6 kHz (96 less 8 cycles)
-#define BIT_PULSE 30  // pulse is 5/16 of bit period
+#define BIT_PERIOD_US 88 // 9600 bps with clock at 921.6 kHz (96 less 8 cycles)
+#define BIT_PULSE_US 20  // pulse is approx 3/16 of bit period
 
 uint8_t getSwitch(void) {
     return (0x0F & (((uint8_t)(~PIND)) >> 3)); // read address from rotary switch
@@ -38,29 +38,30 @@ static bool bit_sync(void) {
         }
     }
     TCNT0 = 0;
-    OCR0A = BIT_PERIOD;
+    OCR0A = BIT_PERIOD_US;
     TIFR |= (1 << OCF0A);
     return rx_inactive;
 }
 
 // returns true if successful
 bool tx_zero(void) {
-    if (RX_IS_RELEASED || TX_IS_ACTIVE) {
+    if (RX_IS_RELEASED) {
         TX_ACTIVE;
-        return !bit_sync();
+        _delay_us(BIT_PULSE_US);
+        TX_RELEASE;
+        _delay_us(10);
+        return bit_sync();
     }
     return false;
 }
 
 // returns true if successful
 bool tx_one(void) {
-    TX_RELEASE;
-    _delay_us(10);
     return bit_sync();
 }
 
 bool send(uint8_t data[], uint8_t bytes_to_send) {
-    for (uint8_t i = 0; i < 20; i++) { // minimum 15 bit periods between frames
+    for (uint8_t i = 0; i < 20; i++) { // minimum 20 bit periods between bus activity
         if (!tx_one()) {
             return false;
         }
