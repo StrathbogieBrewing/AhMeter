@@ -28,6 +28,7 @@ include_directories(../lib/cobsm)
 add_avr_executable(${PROJECT_NAME} 
     main.c
     uart0.c
+    tinbus.c
 
     ../lib/uart/uart.c
     ../lib/uart/uart1.c

@@ -7,6 +7,14 @@
         "string": "c",
         "buffer": "c",
         "string_view": "c",
-        "cstddef": "c"
+        "cstddef": "c",
+        "optional": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "algorithm": "c"
     }
 }

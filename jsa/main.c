@@ -49,7 +49,7 @@ bool tx_zero(void) {
         TX_ACTIVE;
         _delay_us(BIT_PULSE_US);
         TX_RELEASE;
-        _delay_us(10);
+        _delay_us(BIT_PULSE_US / 2);
         return bit_sync();
     }
     return false;
