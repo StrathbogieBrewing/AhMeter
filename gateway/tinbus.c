@@ -10,9 +10,17 @@
 #define BIT_PERIOD 48
 #define RX_TIMEOUT (BIT_PERIOD * 20) // 20 bit periods
 
+#define RX_IS_RELEASED (PIND & (1 << PORTD0))
+#define TX_ACTIVATE (PORTD |= (1 << PORTD4))
+#define TX_RELEASE (PORTD &= ~(1 << PORTD4))
+#define TX_IS_ACTIVE (PORTD & (1 << PORTD4))
+
 static volatile uint8_t tinbus_rx_head = 0;
 static volatile uint8_t tinbus_rx_tail = 0;
-static uint16_t tinbus_rx_data[TINBUS_BUFFER_SIZE] = {0};
+static uint16_t tinbus_rx_data[TINBUS_BUFFER_SIZE] = {0};#define RX_IS_RELEASED (PIND & (1 << PORTD0))
+#define TX_ACTIVATE (PORTD |= (1 << PORTD4))
+#define TX_RELEASE (PORTD &= ~(1 << PORTD4))
+#define TX_IS_ACTIVE (PORTD & (1 << PORTD4))
 
 // static volatile uint8_t tinbus_tx_head = 0;
 // static volatile uint8_t tinbus_tx_tail = 0;
@@ -44,6 +52,11 @@ ISR(TIMER1_COMPA_vect) {
 }
 
 void tinbus_init(void) {
+        PORTD &= ~(1 << PORTD4); // disable tx drive
+    DDRD |= (1 << PORTD4);
+
+    PORTD &= ~(1 << PORTD1); // enable tx
+    DDRD |= (1 << PORTD1);
     TCCR1B = (1 << ICNC1) | (1 << CS11); // normal mode, divide clock by 8
     TIMSK1 = (1 << ICIE1) | (1 << OCIE1A);
     sei();

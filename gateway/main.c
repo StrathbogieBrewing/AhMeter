@@ -14,10 +14,7 @@
 #include "uart1.h"
 
 #include "cobsm.h"
-#include "timer.h"
 #include "tinbus.h"
-#include "uart.h"
-#include "uart0.h"
 
 #define RX_BUFFER_SIZE 256
 #define RX_TIMEOUT TIMER_US_TO_TICKS((15 * 1000000) / 9600)
@@ -53,4 +50,3 @@ int main(void) {
     }
     return 0;
 }
-

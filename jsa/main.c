@@ -11,7 +11,6 @@
 #include "crc8.h"
 
 #define RX_IS_RELEASED (PIND & (1 << PORTD0))
-
 #define TX_ACTIVE (PORTD |= (1 << PORTD2))
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
