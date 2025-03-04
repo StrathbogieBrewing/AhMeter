@@ -45,6 +45,7 @@ int main(void) {
             rx_buffer[rx_byte_count++] = rx_data.data;
             uint8_t tx_byte_count = cobsm_encode(rx_buffer, rx_byte_count);
             fwrite(rx_buffer, tx_byte_count, 1, stdout);
+            // fwrite(rx_buffer, rx_byte_count, 1, stdout);
             rx_byte_count = 0;
         }
     }

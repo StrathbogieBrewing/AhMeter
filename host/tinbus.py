@@ -1,6 +1,8 @@
 import cobsm, port, utils, crc, time
 
-serial = port.port("DUSB (Dingo)")
+# serial = port.port("DUSB (Dingo)")
+serial = port.port("Tinbus")
+
 
 start_time = time.time()
 

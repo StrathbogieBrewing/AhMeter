@@ -17,10 +17,8 @@
 
 static volatile uint8_t tinbus_rx_head = 0;
 static volatile uint8_t tinbus_rx_tail = 0;
-static uint16_t tinbus_rx_data[TINBUS_BUFFER_SIZE] = {0};#define RX_IS_RELEASED (PIND & (1 << PORTD0))
-#define TX_ACTIVATE (PORTD |= (1 << PORTD4))
-#define TX_RELEASE (PORTD &= ~(1 << PORTD4))
-#define TX_IS_ACTIVE (PORTD & (1 << PORTD4))
+static uint16_t tinbus_rx_data[TINBUS_BUFFER_SIZE] = {0};
+
 
 // static volatile uint8_t tinbus_tx_head = 0;
 // static volatile uint8_t tinbus_tx_tail = 0;
