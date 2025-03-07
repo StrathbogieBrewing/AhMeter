@@ -41,7 +41,10 @@ class port:
 
     def read(self):
         # global buffer
-        data = self.ser.read(self.ser.in_waiting)  # Read all available bytes
+        # if self.ser.in_waiting == 0:
+        #     return None
+        # data = self.ser.read(self.ser.in_waiting)   # Read all available bytes
+        data = self.ser.read(1)  # Read one byte at a time
         if data:
             self.rx_buffer.extend(data)  # Append new data to buffer
             while b'\x00' in self.rx_buffer:  # Check if there's a NUL-terminated string
