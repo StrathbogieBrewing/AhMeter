@@ -16,5 +16,10 @@
         "type_traits": "c",
         "utility": "c",
         "algorithm": "c"
-    }
+    },
+    "sshfs.configs": [
+        {
+            "name": "raspi"
+        }
+    ]
 }

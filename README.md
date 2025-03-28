@@ -5,10 +5,7 @@ socat  /dev/ttyUSB2,b9600,raw,echo=0 - | hd
 
 # InfluxDB Token
 
-hjAFrA0r_I72tEuR66HJxUnF1vbkfLr_OAqH_WEoWqdZ_c0xu-PmmW5-V_4OYhdRslDjpqLS7dcmit-RS89qEQ==
+6Ahml_tO3rWw207013Vn1dLBE9q6zLnxtFPGbIdheXnl447NNdAPg6twMuLQoeRScSzcian5VScLptRNXQsgng==
 
-run \
-    -p 8086:8086 \
-    -v "$PWD/data:/var/lib/influxdb2" \
-    -v "$PWD/config:/etc/influxdb2" \
-    docker.io/influxdb:2
+podman run  -d -p 192.168.6.1:8086:8086 --network=host -v "/root/podman/influx/data:/var/lib/influxdb2" -v "/root/podman/influx/config:/etc/influxdb2" docker.io/influxdb:2
+
