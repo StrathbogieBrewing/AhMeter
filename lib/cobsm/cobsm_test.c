@@ -34,7 +34,7 @@ struct tests test_list[] = {
 uint8_t test_count = sizeof(test_list) / sizeof(struct tests);
 
 int main() {
-  uint8_t buffer[256] = {0};
+  uint8_t buffer[64] = {0};
 
   uint8_t test_index = 0;
   while (test_index < test_count) {

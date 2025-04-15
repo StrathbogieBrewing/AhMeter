@@ -6,12 +6,14 @@ set(AVR_UPLOADTOOL_PORT /dev/ttySTK500V2)
 set(AVR_PROGRAMMER stk500v2)
 
 set(AVR_MCU_TYPE atmega164p)
-# set(AVR_MCU_TYPE atmega324p)
+set(AVR_MCU_TYPE atmega324p)
 set(AVR_MCU_SPEED "3686400UL")
 
 set(AVR_L_FUSE 0xEC)
 set(AVR_H_FUSE 0xD9)
 set(AVR_E_FUSE 0xFE)
+
+add_definitions(-DUART0_BAUD=19200UL)
 
 add_definitions("-Os")
 
@@ -28,11 +30,11 @@ include_directories(../lib/cobsm)
 
 add_avr_executable(${PROJECT_NAME} 
     main.c
-    uart0.c
     tinbus.c
 
     ../lib/uart/uart.c
     ../lib/uart/uart1.c
+    ../lib/uart/uart0.c
     ../lib/timer/timer.c
     ../lib/cobsm/cobsm.c
 
