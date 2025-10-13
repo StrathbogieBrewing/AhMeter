@@ -1,0 +1,12 @@
+{
+  "name": "serial-port-test",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node test-serial.js"
+  },
+  "dependencies": {
+    "node-red-node-serialport": "^2.0.3",
+    "serialport": "^12.0.0"
+  }
+}

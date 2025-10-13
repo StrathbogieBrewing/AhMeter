@@ -2,6 +2,8 @@
 
 **/venv
 
+host/javascript/node_modules
+
 **/__pycache__
 
 # Prerequisites

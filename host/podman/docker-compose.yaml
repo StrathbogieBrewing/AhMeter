@@ -1,0 +1,34 @@
+services:
+  node-red:
+    image: nodered-custom:latest
+    container_name: nodered-local
+    ports:
+      - "1880:1880"
+    devices:
+      # - "/dev/serial/by-id/usb-Plasmatronics_Tinbus_A7RCZR9O-if00-port0:/dev/serial/by-id/usb-Plasmatronics_Tinbus_A7RCZR9O-if00-port0"
+      # - "/dev/ttyUSB0:/dev/ttyUSB0"
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    group_add:
+      - keep-groups
+    privileged: 
+      - true
+    volumes:
+      - nodereddata:/data
+      # - /dev/serial:/dev/serial  # Serial device information
+      # - /dev:/dev:rw
+      # - ./flows.json:/data/flows.json
+    environment:
+      - NODE_RED_ENABLE_PROJECTS=false
+      - TZ=UTC
+    security_opt:
+      - label=disable
+    restart: unless-stopped
+    networks:
+      - node-red-net
+
+networks:
+  node-red-net:
+    driver: bridge
+
+volumes:
+  nodereddata:
