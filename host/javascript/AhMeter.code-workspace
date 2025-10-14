@@ -1,0 +1,45 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"asm.h": "c",
+			"hex_asc.h": "c",
+			"uart1.h": "c",
+			"array": "c",
+			"string": "c",
+			"buffer": "c",
+			"string_view": "c",
+			"cstddef": "c",
+			"optional": "c",
+			"ratio": "c",
+			"system_error": "c",
+			"functional": "c",
+			"tuple": "c",
+			"type_traits": "c",
+			"utility": "c",
+			"algorithm": "c",
+			"timer.h": "c",
+			"stdbool.h": "c"
+		},
+		"sshfs.configs": [
+			{
+				"name": "raspi",
+				"host": "192.168.8.1",
+				"root": "/home",
+				"username": "root",
+				"password": "1bs123ps"
+			},
+			{
+				"name": "server",
+				"host": "tinbus.org",
+				"root": "/home/python",
+				"username": "root",
+				"password": "1Bs12+3Ps"
+			}
+		]
+	}
+}

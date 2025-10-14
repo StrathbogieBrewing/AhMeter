@@ -20,8 +20,8 @@
 
 #define MESSAGE_SHUNT_BASE 0x80
 
-// #define ADC_SAMPLES 7
-#define ADC_SAMPLES 1
+#define ADC_SAMPLES 7
+// #define ADC_SAMPLES 1
 #define BIT_PERIOD_US (96 - 4) // 9600 bps with clock at 921.6 kHz (4 us adjusted for loop delay)
 
 uint8_t getSwitch(void) {

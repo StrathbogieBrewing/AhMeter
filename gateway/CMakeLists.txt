@@ -6,7 +6,7 @@ set(AVR_UPLOADTOOL_PORT /dev/ttySTK500V2)
 set(AVR_PROGRAMMER stk500v2)
 
 set(AVR_MCU_TYPE atmega164p)
-set(AVR_MCU_TYPE atmega324p)
+# set(AVR_MCU_TYPE atmega324p)
 set(AVR_MCU_SPEED "3686400UL")
 
 set(AVR_L_FUSE 0xEC)
