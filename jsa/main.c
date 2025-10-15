@@ -115,15 +115,15 @@ int main(void) {
                 frame[4] = crc;
 
                 uint8_t tries = 0;
-                uint8_t priority = 3;
+                uint8_t priority = 7;
                 while (tries < 5) {
                     if (send(frame, FRAME_SIZE)) {
                         break;
                     }
                     tries++;
-                    uint8_t i = ((priority & 0x07) << 2) + (TCNT0 & 0x03);
+                    uint8_t i = ((priority & 0x0F) << 4) + (TCNT0 & 0x0F);
                     while (i--) {
-                        _delay_us(BIT_PERIOD_US / 2); 
+                        _delay_us(BIT_PERIOD_US); 
                     }
                 }
             }
