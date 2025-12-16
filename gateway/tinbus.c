@@ -8,9 +8,9 @@
 #include "uart0.h"
 
 #define TINBUS_BUFFER_SIZE 16
-#define RX_TIMEOUT (BIT_PERIOD * 20) // 20 bit periods
+// #define RX_TIMEOUT (BIT_PERIOD * 20) // 20 bit periods
 
-#define RX_TIMEOUT_TICKS (1823UL / TIMER_US_PER_TICK) // 2 characters
+#define RX_TIMEOUT_TICKS (1042UL / TIMER_US_PER_TICK) // 2 characters
 
 #define RX_IS_RELEASED (PIND & (1 << PORTD0))
 #define TX_ACTIVATE (PORTD |= (1 << PORTD4))

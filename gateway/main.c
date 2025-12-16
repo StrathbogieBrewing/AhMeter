@@ -13,8 +13,8 @@
 #include "tinbus.h"
 #include "uart1.h"
 
-#define RX_BUFFER_SIZE 64
-#define RX_TIMEOUT TIMER_US_TO_TICKS((15 * 1000000) / 9600)
+#define RX_BUFFER_SIZE 16
+// #define RX_TIMEOUT TIMER_US_TO_TICKS((15 * 1000000) / 9600)
 
 int main(void) {
     wdt_enable(WDTO_250MS);

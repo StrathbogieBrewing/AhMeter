@@ -4,7 +4,6 @@ import json
 
 import threading, sys
 
-
 serial = port.port("Tinbus")
 
 def read_jsa():
@@ -17,7 +16,8 @@ def read_jsa():
     load_amphours = 0
     load_amps = 0
     voltage_count = 0
-    # buffer = Buffer()
+    i = 0;
+
     points = []
 
     while True:
@@ -27,9 +27,16 @@ def read_jsa():
             frame = crc.check(frame)
             if len(frame) != 0:
 
+                
+
+                if frame[3] == 0x01:
+                    if frame[4] != i + 1:
+                        print(frame.hex())
+                    i = frame[4]
+
                 if frame[0] == 0x84:  
                     if len(frame) == 4:
-                        i = int.from_bytes(frame[1:4], byteorder='big', signed=True)
+                        i = int.from_bytes(frame[5:8], byteorder='big', signed=True)
                         battery_volts = i / 2821
                         # points.append(Point("battery").time(time.time_ns()).field('battery_volts', round(battery_volts, 3)))
                         # buffer.row('solar',
@@ -56,7 +63,7 @@ def read_jsa():
 
                 if frame[0] == 0x82:  
                     if len(frame) == 4:
-                        i = int.from_bytes(frame[1:4], byteorder='big', signed=True)
+                        i = int.from_bytes(frame[5:8], byteorder='big', signed=True)
                         load_amps = i / 414.54  # Calibrate measurement
                         if load_time == 0:
                             load_time = time.time()
@@ -77,7 +84,7 @@ def read_jsa():
 
                 if frame[0] == 0x80:  # JSA current message
                     if len(frame) == 4:
-                        i = int.from_bytes(frame[1:4], byteorder='big', signed=True)
+                        i = int.from_bytes(frame[5:8], byteorder='big', signed=True)
                         battery_amps = i / 414.54  # Calibrate measurement
                         if battery_time == 0:
                             battery_time = time.time()

@@ -15,14 +15,15 @@
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
-#define MESSAGE_SIZE 4
+#define MESSAGE_SIZE 8
 #define FRAME_SIZE (MESSAGE_SIZE + 1) // add a byte for the crc
 
-#define MESSAGE_SHUNT_BASE 0x80
+#define SHUNT_DEVICE_ID 0xADC00000
 
 #define ADC_SAMPLES 7
 // #define ADC_SAMPLES 1
-#define BIT_PERIOD_US (96 - 4) // 9600 bps with clock at 921.6 kHz (4 us adjusted for loop delay)
+#define BIT_PERIOD_US (104 - 12) // 9600 bps with clock at 921.6 kHz (4 us adjusted for loop delay)
+#define BITS_PER_MESSAGE (10 * FRAME_SIZE * 4)
 
 uint8_t getSwitch(void) {
     return (0x0F & (((uint8_t)(~PIND)) >> 3)); // read address from rotary switch
@@ -80,8 +81,11 @@ bool send(uint8_t data[], uint8_t bytes_to_send) {
 
 int main(void) {
     static int32_t current = 0;
-    static uint8_t count = 0;
-
+    static uint8_t adc_count = 0;
+    static uint8_t frame_count = 0;
+    static bool frame_sent = false;
+    static uint8_t frame_buffer[FRAME_SIZE] ={0};
+    
     wdt_enable(WDTO_250MS);
     asm_init();
 
@@ -92,38 +96,44 @@ int main(void) {
 
     while (1) {
         wdt_reset();
+
         if (asm_ADC_doConversion()) // we now have about 150 ms before next adc interrupt
         {
             int32_t value = asm_ADC_getRawResult();
             current += value;
-            count++;
+            adc_count++;
 
-            if (count >= ADC_SAMPLES) {
-                count = 0;
-
-                uint8_t frame[FRAME_SIZE];
-                uint8_t id = MESSAGE_SHUNT_BASE | getSwitch();
-                frame[0] = id;
-                frame[1] = (uint32_t)current >> 16;
-                frame[2] = (uint32_t)current >> 8;
-                frame[3] = (uint32_t)current;
+            if (adc_count >= ADC_SAMPLES) {
+                adc_count = 0;
+                
+                frame_buffer[0] = (uint8_t)(SHUNT_DEVICE_ID >> 24);
+                frame_buffer[1] = (uint8_t)(SHUNT_DEVICE_ID >> 16);
+                frame_buffer[2] = (uint8_t)(SHUNT_DEVICE_ID >> 8);
+                frame_buffer[3] = getSwitch();
+                frame_buffer[4] = frame_count++;
+                frame_buffer[5] = (uint8_t)((uint32_t)current >> 16);
+                frame_buffer[6] = (uint8_t)((uint32_t)current >> 8);
+                frame_buffer[7] = (uint8_t)((uint32_t)current);
                 current = 0;
                 uint8_t crc = 0;
                 for (uint8_t index = 0; index < MESSAGE_SIZE; index++) {
-                    crc = crc8(crc, frame[index]);
+                    crc = crc8(crc, frame_buffer[index]);
                 }
-                frame[4] = crc;
+                frame_buffer[MESSAGE_SIZE] = crc;
+                frame_sent = false;
+            }
 
-                uint8_t tries = 0;
-                uint8_t priority = 7;
-                while (tries < 5) {
-                    if (send(frame, FRAME_SIZE)) {
+            if (!frame_sent) {
+                uint8_t send_attempts = 0;
+                while (send_attempts < 5) {
+                    if (send(frame_buffer, FRAME_SIZE)) {
+                        frame_sent = true;
                         break;
                     }
-                    tries++;
-                    uint8_t i = ((priority & 0x0F) << 4) + (TCNT0 & 0x0F);
-                    while (i--) {
-                        _delay_us(BIT_PERIOD_US); 
+                    send_attempts++;
+                    uint8_t delay_bits = 0x80 + (TCNT0 & 0x3F);
+                    while (delay_bits--) {
+                        _delay_us(BIT_PERIOD_US);
                     }
                 }
             }

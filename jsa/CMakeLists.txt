@@ -6,7 +6,7 @@ set(AVR_UPLOADTOOL_PORT /dev/ttySTK500V2)
 set(AVR_PROGRAMMER stk500v2)
 
 set(AVR_MCU_TYPE attiny2313)
-set(AVR_MCU_TYPE attiny4313)
+# set(AVR_MCU_TYPE attiny4313)
 set(AVR_MCU_SPEED "921600UL")
 
 set(AVR_L_FUSE 0xDD)
