@@ -15,10 +15,10 @@
 #define TX_RELEASE (PORTD &= ~(1 << PORTD2))
 #define TX_IS_ACTIVE (PORTD & (1 << PORTD2))
 
-#define MESSAGE_SIZE 8
+#define MESSAGE_SIZE 4
 #define FRAME_SIZE (MESSAGE_SIZE + 1) // add a byte for the crc
 
-#define SHUNT_DEVICE_ID 0xADC00000
+#define SHUNT_DEVICE_ID 0x04
 
 #define ADC_SAMPLES 7
 // #define ADC_SAMPLES 1
@@ -80,9 +80,8 @@ bool send(uint8_t data[], uint8_t bytes_to_send) {
 }
 
 int main(void) {
-    static int32_t current = 0;
+    static int32_t adc_average = 0;
     static uint8_t adc_count = 0;
-    static uint8_t frame_count = 0;
     static bool frame_sent = false;
     static uint8_t frame_buffer[FRAME_SIZE] ={0};
     
@@ -92,29 +91,24 @@ int main(void) {
     DDRD |= (1 << PORTD1); // init bus outputs
     DDRD |= (1 << PORTD2);
 
-    DDRB |= (1 << PORTB2); // debug
+    // DDRB |= (1 << PORTB2); // debug
 
     while (1) {
         wdt_reset();
 
         if (asm_ADC_doConversion()) // we now have about 150 ms before next adc interrupt
         {
-            int32_t value = asm_ADC_getRawResult();
-            current += value;
+            int32_t adc_value = asm_ADC_getRawResult();
+            adc_average += adc_value;
             adc_count++;
 
             if (adc_count >= ADC_SAMPLES) {
                 adc_count = 0;
-                
-                frame_buffer[0] = (uint8_t)(SHUNT_DEVICE_ID >> 24);
-                frame_buffer[1] = (uint8_t)(SHUNT_DEVICE_ID >> 16);
-                frame_buffer[2] = (uint8_t)(SHUNT_DEVICE_ID >> 8);
-                frame_buffer[3] = getSwitch();
-                frame_buffer[4] = frame_count++;
-                frame_buffer[5] = (uint8_t)((uint32_t)current >> 16);
-                frame_buffer[6] = (uint8_t)((uint32_t)current >> 8);
-                frame_buffer[7] = (uint8_t)((uint32_t)current);
-                current = 0;
+                frame_buffer[0] = (SHUNT_DEVICE_ID << 4) | getSwitch();
+                frame_buffer[1] = (uint8_t)((uint32_t)adc_average >> 16);
+                frame_buffer[2] = (uint8_t)((uint32_t)adc_average >> 8);
+                frame_buffer[3] = (uint8_t)((uint32_t)adc_average);
+                adc_average = 0;
                 uint8_t crc = 0;
                 for (uint8_t index = 0; index < MESSAGE_SIZE; index++) {
                     crc = crc8(crc, frame_buffer[index]);

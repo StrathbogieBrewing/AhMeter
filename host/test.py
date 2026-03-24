@@ -27,12 +27,12 @@ def read_jsa():
             frame = crc.check(frame)
             if len(frame) != 0:
 
-                
+                print(frame.hex())
 
-                if frame[3] == 0x01:
-                    if frame[4] != i + 1:
-                        print(frame.hex())
-                    i = frame[4]
+                # if frame[3] == 0x01:
+                #     if frame[4] != i + 1:
+                #         print(frame.hex())
+                #     i = frame[4]
 
                 if frame[0] == 0x84:  
                     if len(frame) == 4:
