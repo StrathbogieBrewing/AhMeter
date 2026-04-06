@@ -78,6 +78,8 @@ function round(value, precision) {
     return Math.round(value * multiplier) / multiplier;
 }
 
+
+
 function tinbus_decode(buffer){
     let json = JSON.stringify({});
     if (!Buffer.isBuffer(buffer)) {
@@ -86,22 +88,39 @@ function tinbus_decode(buffer){
     if (buffer.length == 0) {
         throw new TypeError("Must not be an empty Buffer");
     }
-    if((buffer[0] & 0xF0) == 0x80){
+    if((buffer[0] & 0xF0) == 0x40){
         // Tinbus shunt adapter
         let value = buffer.readIntBE(1, 3); // Read 3 bytes starting at position 1
         let channel = buffer[0] & 0x0F;
         switch (channel) {
             case 0: // Battery Current
-                const battery_amps = round(value / 414.54, 3);  // Calibrate measurement
-                json = JSON.stringify({"Battery Current": battery_amps});
+                const battery_A = round(value / 414.5, 3);  // Calibrate measurement
+                let battery_mA = Math.round(battery_A * 1000);
+                let last_timestamp_ms = context.get('last_timestamp_ms') || Date.now();
+                let this_timestamp_ms = Date.now();
+                let time_elapsed_ms = this_timestamp_ms - last_timestamp_ms;
+                context.set('last_timestamp_ms', this_timestamp_ms);
+                let battery_mAms = context.get('battery_mAms') || 0;
+                battery_mAms = battery_mAms + (battery_mA * time_elapsed_ms);
+                context.set('battery_mAms', battery_mAms);
+                let battery_Ah = round(battery_mAms / 3600000000.0, 3);
+                json = JSON.stringify({ "Batt_A": battery_A, "Batt_Ah": battery_Ah });
                 break;
             case 1: // Load Current
-                const load_amps = round(value / 414.54, 3);  // Calibrate measurement
-                json = JSON.stringify({"Load Current": load_amps});
+                const load_amps = round(value / 414.5, 3);  // Calibrate measurement
+                json = JSON.stringify({"Load_A": load_amps});
                 break;
-            case 2: // Battery Voltage
-                const battery_volts = round(value / 2821, 3);  // Calibrate measurement
-                json = JSON.stringify({"Battery Voltage": battery_volts});
+            case 2: // Dump Current
+                const dump_amps = round(value / 414.5, 3);  // Calibrate measurement
+                json = JSON.stringify({"Dump_A": dump_amps});
+                break;
+            case 4: // Battery Voltage 1
+                const battery_1 = round(value / 5500, 3);  // Calibrate measurement
+                json = JSON.stringify({"Batt_1_V": battery_1});
+                break;
+            case 5: // Battery Voltage 2
+                const battery_2 = round(value / 5532, 3);  // Calibrate measurement
+                json = JSON.stringify({"Batt_2_V": battery_2});
                 break;
             default:
                 break;
@@ -114,7 +133,10 @@ let cobsm_decoded = decode(msg.payload)
 
 let data = check(cobsm_decoded);
 
-msg.payload = tinbus_decode(data);
+let json_string = tinbus_decode(data);
+
+msg.payload = JSON.parse(json_string);
+
 // msg.payload = JSON.stringify(cobsm_decoded);
 
 return msg;

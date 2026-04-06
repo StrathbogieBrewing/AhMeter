@@ -10,13 +10,12 @@ services:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     group_add:
       - keep-groups
-    privileged: 
-      - true
+    privileged: true
     volumes:
       - nodereddata:/data
       # - /dev/serial:/dev/serial  # Serial device information
       # - /dev:/dev:rw
-      # - ./flows.json:/data/flows.json
+      # - ./flows.json:/data/flows.json888
     environment:
       - NODE_RED_ENABLE_PROJECTS=false
       - TZ=UTC
@@ -32,3 +31,5 @@ networks:
 
 volumes:
   nodereddata:
+
+  # y61dxXlUyM-QRJ_WCWUTsOSEWY0XLBzGnhdXc2sBlBjiXJuShqjDvzS-GrBnvYcdia1xcVJOCAOywPYUr5uYPA==
