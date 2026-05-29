@@ -49,6 +49,29 @@ WiFiUDP Udp;
 
 // From
 // https://github.com/Seeed-Studio/one_channel_hub/components/smtc_ral/bsp/sx126x/seeed_xiao_esp32s3_devkit_sx1262.c
+// const smtc_shield_sx126x_xosc_cfg_t smtc_shield_xiao_esp32s3_devkit_sx1262_xosc_cfg = {
+//     .tcxo_is_radio_controlled = true,
+//     .supply_voltage           = SX126X_TCXO_CTRL_3_0V,
+//     .startup_time_in_tick     = 300,
+// };
+
+// /**
+//  * @brief GPIO configuration
+//  */
+// const smtc_shield_sx126x_pinout_t smtc_shield_xiao_esp32s3_devkit_sx1262_pinout = {
+//     .nss   = 41,  /* GPIO4 */
+//     .sclk  = 7,  /* GPIO7 */
+//     .mosi  = 9, /* GPIO9 */
+//     .miso  = 8, /* GPIO8 */
+//     .reset = 42, /* GPIO3 */
+//     .busy  = 40, /* GPIO2 */
+//     .irq   = 39, /* DIO1 */
+//     .antenna_sw = 38, /* GPIO5 */
+//     .led_tx     = 0xFF, /* NC */
+//     .led_rx     = 0xFF, /* NC */
+// };
+
+
 SX1262 radio = new Module(41, 39, 42, 40);
 
 //   RADIO_SPI.begin(10, 6, 7);
